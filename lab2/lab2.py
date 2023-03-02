@@ -1,32 +1,22 @@
-def divisors_sum(number):
-"""Return the sum of the divisors of the given number."""
-divisors_sum = 0
-for i in range(1, number):
-if number % i == 0:
-divisors_sum += i
-return divisors_sum
+def find_divisors(n):
+    divisors = [1]
+    for i in range(2, int(n**0.5) + 1):
+        if n % i == 0:
+            divisors.append(i)
+            if i != n // i:
+                divisors.append(n // i)
+    return divisors
 
-def is_perfect(number):
-"""Return True if the given number is a perfect number, False otherwise."""
-return divisors_sum(number) == number
-
-def is_amicable(number):
-"""Return True if the given number is an amicable number, False otherwise."""
-friend = divisors_sum(number)
-return friend != number and divisors_sum(friend) == number
-
-def find_perfect_and_amicable_numbers(upper_bound):
-"""Return the list of perfect and amicable numbers up to the given upper bound."""
 perfect_numbers = []
-amicable_numbers = []
-for i in range(1, upper_bound + 1):
-if is_perfect(i):
-perfect_numbers.append(i)
-elif is_amicable(i):
-amicable_numbers.append(i)
-return perfect_numbers, amicable_numbers
+friendly_numbers = []
 
-# Example usage
-perfect_numbers, amicable_numbers = find_perfect_and_amicable_numbers(10**6)
+for i in range(1, 1000000):
+    divisors_sum = sum(find_divisors(i))
+    if divisors_sum == i*(i != 1):
+        perfect_numbers.append(i)
+    elif divisors_sum > i:
+        if sum(find_divisors(divisors_sum)) == i:
+            friendly_numbers.append((i, divisors_sum))
+
 print("Perfect numbers:", perfect_numbers)
-print("Amicable numbers:", amicable_numbers)
+print("Friendly numbers:", friendly_numbers)
