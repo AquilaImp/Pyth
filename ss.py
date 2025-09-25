@@ -273,4 +273,86 @@ class GraphPlotter:
         if hasattr(event, 'step'):
             scale_factor = 1.0 - event.step * 0.1
         else:
-            scale_factor = 0.9 
+            scale_factor = 0.9 if event.button == 'up' else 1.1
+        
+        scale_factor = max(0.1, min(10.0, scale_factor))
+        
+        print(f"Масштабирование: {scale_factor}, X: {self.x_range}, Y: {self.y_range}")
+        
+        x_range = self.x_range[1] - self.x_range[0]
+        new_x_range = x_range * scale_factor
+        self.x_range = (x_mouse - new_x_range/2, x_mouse + new_x_range/2)
+        
+        if self.y_range is not None:
+            y_range = self.y_range[1] - self.y_range[0]
+            new_y_range = y_range * scale_factor
+            self.y_range = (y_mouse - new_y_range/2, y_mouse + new_y_range/2)
+        
+        self.plot_function()
+    
+    def on_mouse_press(self, event):
+        if event.inaxes == self.ax and event.button == 1:
+            self.dragging = True
+            self.last_x = event.xdata
+            self.last_y = event.ydata
+    
+    def on_mouse_move(self, event):
+        if self.dragging and event.inaxes == self.ax:
+            if self.last_x is not None and self.last_y is not None:
+                dx = event.xdata - self.last_x
+                dy = event.ydata - self.last_y
+                
+                self.x_range = (self.x_range[0] - dx, self.x_range[1] - dx)
+                if self.y_range:
+                    self.y_range = (self.y_range[0] + dy, self.y_range[1] + dy)
+                
+                self.plot_function()
+                
+                self.last_x = event.xdata
+                self.last_y = event.ydata
+    
+    def on_mouse_release(self, event):
+        self.dragging = False
+    
+    def on_key_press(self, event):
+        if event.key == '=' or event.key == '+':
+            self.zoom_in_center()
+        elif event.key == '-':
+            self.zoom_out_center()
+        elif event.key == 'r':
+            self.on_reset_clicked(None)
+    
+    def zoom_in_center(self):
+        center_x = (self.x_range[0] + self.x_range[1]) / 2
+        center_y = (self.y_range[0] + self.y_range[1]) / 2 if self.y_range is not None else 0
+        
+        scale_factor = 0.8
+        x_range = (self.x_range[1] - self.x_range[0]) * scale_factor
+        y_range = (self.y_range[1] - self.y_range[0]) * scale_factor if self.y_range is not None else 20 * scale_factor
+        
+        self.x_range = (center_x - x_range/2, center_x + x_range/2)
+        if self.y_range is not None:
+            self.y_range = (center_y - y_range/2, center_y + y_range/2)
+        
+        self.plot_function()
+    
+    def zoom_out_center(self):
+        center_x = (self.x_range[0] + self.x_range[1]) / 2
+        center_y = (self.y_range[0] + self.y_range[1]) / 2 if self.y_range is not None else 0
+        
+        scale_factor = 1.25
+        x_range = (self.x_range[1] - self.x_range[0]) * scale_factor
+        y_range = (self.y_range[1] - self.y_range[0]) * scale_factor if self.y_range is not None else 20 * scale_factor
+        
+        self.x_range = (center_x - x_range/2, center_x + x_range/2)
+        if self.y_range is not None:
+            self.y_range = (center_y - y_range/2, center_y + y_range/2)
+        
+        self.plot_function()
+    
+    def run(self):
+        plt.show()
+
+if __name__ == "__main__":
+    app = GraphPlotter()
+    app.run()
